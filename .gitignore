@@ -1,8 +1,10 @@
 /data.json
 /debug.exe
 /to_exe.py
-/.idea
-**/__pycache__/
-/versions
-/Autosaves
-/for_gpt
+/.idea/
+/__pycache__/
+/gui/__pycache__/
+/utils/__pycache__/
+/versions/
+/Autosaves/
+/for_gpt/
