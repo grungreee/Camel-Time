@@ -2,7 +2,7 @@
 /debug.exe
 /to_exe.py
 /.idea
-/__pycache__
+**/__pycache__/
 /versions
 /Autosaves
 /for_gpt
