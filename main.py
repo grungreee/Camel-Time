@@ -12,7 +12,7 @@ def init_program() -> None:
 
     threading.Thread(target=handle_processes_queue).start()
     threading.Thread(target=check_new_processes).start()
-    threading.Thread(target=lambda: auto_save(1, 7), daemon=True).start()
+    threading.Thread(target=lambda: auto_save(5, 20), daemon=True).start()
 
 
 def main() -> None:

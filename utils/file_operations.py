@@ -47,11 +47,12 @@ def is_data_file(file_path: str, old_pattern: bool = False):
 
 def load_last_save() -> None:
     while os.listdir("Autosaves"):
-        autosave_path: str = f"Autosaves\\{find_save_by_data("Autosaves", max)}"
-        if not is_data_file(autosave_path):
-            os.remove(autosave_path)
+        last_autosave: str = max(get_files_sorted_by_time("Autosaves"))
+
+        if not is_data_file(last_autosave):
+            os.remove(last_autosave)
         else:
-            with open(autosave_path, "r") as file:
+            with open(last_autosave, "r") as file:
                 save: dict = json.load(file)
 
             with open("data.json", "w") as file:
@@ -64,14 +65,20 @@ def load_last_save() -> None:
     create_data_file()
 
 
-def find_save_by_data(folder_path: str, min_or_max: Callable) -> str:
-    list_of_saves_paths: list = list(map(lambda x: f"{folder_path}/{x}", os.listdir(folder_path)))
-    return min_or_max(list_of_saves_paths, key=os.path.getctime).removeprefix(f"{folder_path}/")
+def get_files_sorted_by_time(folder_path: str) -> list[str]:
+    all_file_paths: list = [os.path.join(folder_path, filename) for filename in os.listdir(folder_path)]
+    sorted_files: list = list(sorted(all_file_paths, key=os.path.getctime, reverse=True))
+
+    return sorted_files
 
 
-def delete_unnecessary_save(max_file_count: int) -> None:
-    if len(os.listdir("Autosaves")) == max_file_count:
-        os.remove(f"Autosaves/{find_save_by_data("Autosaves", min_or_max=min)}")
+def delete_unnecessary_saves(max_file_count: int) -> None:
+    files_sorted_by_time: list = get_files_sorted_by_time("Autosaves")
+
+    if len(files_sorted_by_time) > max_file_count:
+        for file_path in files_sorted_by_time[max_file_count:]:
+            if os.path.exists(file_path):
+                os.remove(file_path)
 
 
 def save_data(folder_path: str) -> None:
@@ -92,7 +99,7 @@ def auto_save(delay_min: int | float, max_file_count: int) -> None:
         if is_data_file("data.json"):
             if not os.path.exists("Autosaves"):
                 os.makedirs("Autosaves")
-            delete_unnecessary_save(max_file_count)
+            delete_unnecessary_saves(max_file_count-1)
             save_data("Autosaves")
 
 

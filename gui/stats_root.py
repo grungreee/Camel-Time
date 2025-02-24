@@ -38,7 +38,8 @@ class StatsRoot(ctk.CTk):
         upper_frame_right.pack_propagate(False)
         upper_frame_right.pack(side=ctk.RIGHT, expand=True, fill=ctk.X)
 
-        settings_icon = ctk.CTkImage(Image.open(resource_path("assets/settings.png", "settings.png")), size=(24, 24))
+        settings_icon = ctk.CTkImage(Image.open(resource_path("assets/settings.png", "settings.png")),
+                                     size=(24, 24))
         ctk.CTkButton(upper_frame_left, image=settings_icon, text="", command=self.open_settings,
                       width=30).pack(side=ctk.LEFT)
         ctk.CTkLabel(upper_frame_left, text="Top programs by usage time", font=("Arial", 16)).pack(side=ctk.RIGHT,
@@ -180,7 +181,8 @@ class StatsRoot(ctk.CTk):
                                   for program_data in data["tracked"].values()}
 
         self.sorted_by_time = dict(sorted(dict_of_programs.items(), key=lambda item: item[1]["hours"], reverse=True))
-        self.recently_used_programs = dict(sorted(dict_of_programs.items(), key=lambda item: item[1]["last_run_time"],
+        self.recently_used_programs = dict(sorted(dict_of_programs.items(),
+                                                  key=lambda item: (item[1]["in_game"], item[1]["last_run_time"]),
                                                   reverse=True))
 
         for widget in self.top_by_time_programs.winfo_children() + self.last_runned_programs_frame.winfo_children():

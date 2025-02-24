@@ -80,9 +80,9 @@ def check_all_tracked_programs() -> None:
     for process, other in data["tracked"].items():
         pid: int | None = other["pid"]
         if pid is not None and psutil.pid_exists(pid):
-            on_tracked_app_run(pid, process, restart_thread=True)
+            on_tracked_process_run(pid, process, restart_thread=True)
         elif pid is None and process in existing_processes_names:
-            on_tracked_app_run(existing_processes[process], process)
+            on_tracked_process_run(existing_processes[process], process)
         elif pid is not None and not psutil.pid_exists(pid):
             def reset_pid(data: dict) -> dict:
                 data["tracked"][process]["pid"] = None
@@ -101,7 +101,6 @@ def add_time(pid: int, process: str) -> None:
         def add_time(data: dict) -> dict:
             data["tracked"][process]["time"] = (
                 round(time_difference.total_seconds() + data["tracked"][process]["time"], 3))
-            data["tracked"][process]["last_run_time"] += int(time_difference.total_seconds())
             return data
 
         change_data(add_time)
@@ -115,7 +114,7 @@ def add_time(pid: int, process: str) -> None:
         change_data(reset_pid)
 
 
-def on_tracked_app_run(pid: int, process: str, restart_thread: bool = False) -> None:
+def on_tracked_process_run(pid: int, process: str, restart_thread: bool = False) -> None:
     if get_data()["tracked"][process]["pid"] is None or restart_thread:
         def assign_pid(data: dict) -> dict:
             if not restart_thread:
@@ -142,7 +141,7 @@ def on_new_process(pid: int, process: str) -> None:
         display_name = get_name(process, "Enter display name:", "Input name")
         if display_name:
             add_new_tracked_process(process, display_name)
-            on_tracked_app_run(pid, process)
+            on_tracked_process_run(pid, process)
 
 
 def check_new_processes() -> None:
@@ -157,7 +156,7 @@ def check_new_processes() -> None:
                 if process.username() != "SYSTEM":
                     data: dict = get_data()
                     if process_name in data["tracked"]:
-                        threading.Thread(target=on_tracked_app_run, args=(pid, process_name)).start()
+                        threading.Thread(target=on_tracked_process_run, args=(pid, process_name)).start()
                     if process_name not in data["runned"]:
                         def append_to_runned(data: dict) -> dict:
                             data["runned"].append(process_name)

@@ -2,7 +2,6 @@ from PIL import Image
 from utils.file_operations import resource_path
 import threading
 import time
-import sys
 import pystray
 import globals
 
