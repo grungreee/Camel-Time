@@ -108,10 +108,12 @@ def add_time(pid: int, process: str) -> None:
         time.sleep(1)
 
     if not psutil.pid_exists(pid):
-        def reset_pid(data: dict) -> dict:
+        def stop_time(data: dict) -> dict:
             data["tracked"][process]["pid"] = None
+            data["tracked"][process]["last_run_time"] = int(time.time())
             return data
-        change_data(reset_pid)
+
+        change_data(stop_time)
 
 
 def on_tracked_process_run(pid: int, process: str, restart_thread: bool = False) -> None:
