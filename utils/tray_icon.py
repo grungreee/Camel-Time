@@ -31,3 +31,4 @@ def init_icon() -> None:
     )
 
     threading.Thread(target=globals.icon.run, args=(setup_icon,), daemon=True).start()
+    globals.stats_root.show_stats_window()

@@ -1,4 +1,4 @@
-from utils.file_operations import get_data, change_data
+from utils.file_operations import get_data, change_data, clear_runned_programs
 from gui.input_dialog import get_name
 from gui.confirmation_dialog import ask_yes_or_no
 from tkinter.messagebox import showerror, askyesno, showinfo
@@ -25,11 +25,12 @@ def add_tracked_process(process: str, name: str) -> bool:
     else:
         if process not in data["runned"]:
             def add_to_runned(data: dict) -> dict:
-                data["runned"].append(process)
+                data["runned"][process] = int(time.time())
                 return data
             change_data(add_to_runned)
         add_new_tracked_process(process, name)
         threading.Thread(target=check_all_tracked_programs).start()
+        globals.stats_root.update_stats()
         showinfo("Info", "This process has started to track")
         return True
 
@@ -50,6 +51,7 @@ def delete_tracked_process(string: str) -> bool:
                     return data
 
                 change_data(delete)
+                globals.stats_root.update_stats()
                 return True
 
     showerror("Error", "This process is not tracked yet")
@@ -87,7 +89,7 @@ def check_all_tracked_programs() -> None:
             def reset_pid(data: dict) -> dict:
                 data["tracked"][process]["pid"] = None
                 return data
-
+            globals.stats_root.update_stats()
             change_data(reset_pid)
 
 
@@ -114,6 +116,7 @@ def add_time(pid: int, process: str) -> None:
             return data
 
         change_data(stop_time)
+        globals.stats_root.update_stats()
 
 
 def on_tracked_process_run(pid: int, process: str, restart_thread: bool = False) -> None:
@@ -125,6 +128,8 @@ def on_tracked_process_run(pid: int, process: str, restart_thread: bool = False)
             return data
 
         change_data(assign_pid)
+        globals.stats_root.update_stats()
+
         threading.Thread(target=lambda: add_time(pid, process)).start()
 
 
@@ -151,24 +156,31 @@ def check_new_processes() -> None:
 
     while not globals.requested_to_quit:
         new_processes = set(psutil.pids()) - existing_processes
+        existing_processes = set(psutil.pids())
+
         for pid in new_processes:
             try:
                 process = psutil.Process(pid)
                 process_name = process.name()
-                if process.username() != "SYSTEM":
+
+                if process.username() != "SYSTEM" and process_name not in globals.default_runned_apps:
                     data: dict = get_data()
+
                     if process_name in data["tracked"]:
                         threading.Thread(target=on_tracked_process_run, args=(pid, process_name)).start()
+
                     if process_name not in data["runned"]:
-                        def append_to_runned(data: dict) -> dict:
-                            data["runned"].append(process_name)
-                            return data
-                        change_data(append_to_runned)
                         globals.new_processes_queue[process_name] = pid
+
+                    def update_runned(data: dict) -> dict:
+                        data["runned"][process_name] = int(time.time())
+                        return data
+                    change_data(update_runned)
+
+                    clear_runned_programs()
             except (psutil.NoSuchProcess, psutil.AccessDenied):
                 pass
             except Exception as e:
-                showerror(str(e))
+                showerror("Error", str(e))
 
-        existing_processes = set(psutil.pids())
         time.sleep(0.85)

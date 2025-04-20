@@ -9,8 +9,21 @@ import shutil
 import datetime
 
 
+def clear_runned_programs() -> None:
+    def clear_runned(data: dict) -> dict:
+        runned: dict = data["runned"].copy()
+        for process, time_ in runned.items():
+            if time_ < int(time.time()) - 259200:
+                del data["runned"][process]
+        return data
+
+    change_data(clear_runned)
+
+
 def remake_old_data() -> None:
-    if "runned" and "times" in get_data():
+    data: dict = get_data()
+
+    if "times" in data and "programs" in data and "tracked" in data and "runned" in data:
         def remake_data(data: dict) -> dict:
             new_tracked: dict = {process: {"time": data["times"][process], "pid": data["programs"][process],
                                            "display_name": name, "last_run_time": 0}
@@ -18,6 +31,14 @@ def remake_old_data() -> None:
             return {"tracked": new_tracked, "runned": data["runned"]}
 
         change_data(remake_data)
+        
+    if isinstance(data["runned"], list):
+        def convert_runned_to_dict(data: dict) -> dict:
+            data["runned"] = {process: int(time.time()) for process in data["runned"]}
+            return data
+
+        change_data(convert_runned_to_dict)
+
     else:
         def add_last_run_time(data: dict) -> dict:
             for process, other in data["tracked"].items():
@@ -112,7 +133,7 @@ def wait_for_file_operations() -> None:
 
 def create_data_file() -> None:
     json_template = {
-        "runned": globals.default_runned_apps,
+        "runned": {},
         "tracked": {}
     }
 

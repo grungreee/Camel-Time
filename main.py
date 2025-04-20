@@ -7,9 +7,9 @@ import globals
 
 
 def init_program() -> None:
-    check_all_tracked_programs()
     init_icon()
 
+    threading.Thread(target=check_all_tracked_programs).start()
     threading.Thread(target=handle_processes_queue).start()
     threading.Thread(target=check_new_processes).start()
     threading.Thread(target=lambda: auto_save(5, 20), daemon=True).start()
