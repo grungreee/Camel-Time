@@ -31,4 +31,6 @@ def init_icon() -> None:
     )
 
     threading.Thread(target=globals.icon.run, args=(setup_icon,), daemon=True).start()
-    globals.stats_root.show_stats_window()
+
+    if globals.config["open_window_on_start"]:
+        globals.stats_root.show_stats_window()

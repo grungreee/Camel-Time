@@ -1,4 +1,4 @@
-__version__ = "3.5"
+__version__ = "3.6"
 
 default_runned_apps: list = ["python.exe", "dllhost.exe", "RuntimeBroker.exe", "svchost.exe", "conhost.exe",
                              "SearchProtocolHost.exe", "backgroundTaskHost.exe", "smartscreen.exe", "FileCoAuth.exe",
@@ -8,3 +8,4 @@ requested_to_quit: bool = False
 new_processes_queue: dict = {}
 stats_root = None
 icon = None
+config: dict = {}

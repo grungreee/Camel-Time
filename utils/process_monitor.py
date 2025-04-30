@@ -142,7 +142,7 @@ def add_new_tracked_process(process: str, display_name: str) -> None:
 
 def on_new_process(pid: int, process: str) -> None:
     answer = ask_yes_or_no("New process", f"Does this process need to be monitored:\n{process}?",
-                           destroy_after=10, font_size=13)
+                           destroy_after=globals.config["new_process_window_time"], font_size=13)
 
     if answer:
         display_name = get_name(process, "Enter display name:", "Input name")

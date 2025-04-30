@@ -13,7 +13,7 @@ def clear_runned_programs() -> None:
     def clear_runned(data: dict) -> dict:
         runned: dict = data["runned"].copy()
         for process, time_ in runned.items():
-            if time_ < int(time.time()) - 259200:
+            if time_ < time.time() - globals.config["runned_process_time"] and process not in data["tracked"]:
                 del data["runned"][process]
         return data
 
@@ -49,7 +49,7 @@ def remake_old_data() -> None:
         change_data(add_last_run_time)
 
 
-def is_data_file(file_path: str, old_pattern: bool = False):
+def is_data_file(file_path: str, old_pattern: bool = False) -> bool:
     with open(file_path, 'r', encoding='utf-8') as file:
         content = file.read()
         if content.strip():
@@ -110,9 +110,9 @@ def save_data(folder_path: str) -> None:
         showerror("Error", str(e))
 
 
-def auto_save(delay_min: int | float, max_file_count: int) -> None:
+def auto_save(delay_sec: int, max_file_count: int) -> None:
     while not globals.requested_to_quit:
-        for _ in range(int(delay_min*60*2)):
+        for _ in range(int(delay_sec*2)):
             if not globals.requested_to_quit:
                 time.sleep(0.5)
             else:
