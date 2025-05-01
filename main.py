@@ -4,6 +4,8 @@ from utils.tray_icon import init_icon
 from utils.config_operations import handle_config
 from gui.stats_root import StatsRoot
 import threading
+import os
+import sys
 import globals
 
 
@@ -19,6 +21,8 @@ def init_program() -> None:
 
 
 def main() -> None:
+    os.chdir(os.path.dirname(sys.argv[0]))
+
     remake_old_data()
     handle_config()
     globals.stats_root = StatsRoot()
