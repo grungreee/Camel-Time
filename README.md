@@ -50,6 +50,7 @@ Camel Time is a system monitoring tool that tracks the runtime of selected proce
 - **assets/** - Static resources
   - `icon.png` - Application icon
   - `settings.png` - Settings icon
+  - `arrow.png` - Back arrow icon
 
 - **gui/** - User interface components
   - `__init__.py`
