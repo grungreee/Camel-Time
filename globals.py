@@ -1,4 +1,4 @@
-__version__ = "3.61"
+__version__ = "4.0"
 
 default_runned_apps: list = ["python.exe", "dllhost.exe", "RuntimeBroker.exe", "svchost.exe", "conhost.exe",
                              "SearchProtocolHost.exe", "backgroundTaskHost.exe", "smartscreen.exe", "FileCoAuth.exe",

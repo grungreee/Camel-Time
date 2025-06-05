@@ -21,7 +21,8 @@ def init_program() -> None:
 
 
 def main() -> None:
-    os.chdir(os.path.dirname(sys.argv[0]))
+    if getattr(sys, "frozen", False):
+        os.chdir(os.path.dirname(sys.argv[0]))
 
     remake_old_data()
     handle_config()

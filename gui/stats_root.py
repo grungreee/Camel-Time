@@ -14,17 +14,39 @@ class StatsRoot(ctk.CTk):
 
         ctk.set_appearance_mode("dark")
 
-        self.title(f"Camel Time {globals.__version__}")
         self.geometry("640x400")
-        self.minsize(500, 120)
         self.protocol("WM_DELETE_WINDOW", self.on_window_close)
 
         self.debug: bool = debug
         self.sorted_by_time: dict = {}
         self.recently_used_programs: dict = {}
-        self.settings_window: ctk.CTkToplevel | None = None
-        self.entry_window: ctk.CTkToplevel | None = None
         self.answer: str | None = None
+        self.back_button: ctk.CTkButton | None = None
+        self.top_by_time_programs: ctk.CTkScrollableFrame | None = None
+        self.last_runned_programs_frame: ctk.CTkScrollableFrame | None = None
+
+        self.arrow_icon = ctk.CTkImage(Image.open(resource_path("assets/arrow.png", "arrow.png")),
+                                       size=(15, 15))
+
+        self.init_main_page()
+
+        if not self.debug:
+            self.withdraw()
+
+        if not globals.requested_to_quit:
+            self.update_stats()
+
+    def clear_root(self, without_back_button: bool = False) -> None:
+        for widget in self.winfo_children():
+            if without_back_button and widget == self.back_button and self.back_button.winfo_exists():
+                continue
+
+            widget.destroy()
+
+    def init_main_page(self) -> None:
+        self.clear_root()
+        self.title(f"Camel Time {globals.__version__}")
+        self.minsize(503, 120)
 
         upper_frame = ctk.CTkFrame(self, height=30, fg_color="#242424")
         upper_frame.pack_propagate(False)
@@ -60,94 +82,55 @@ class StatsRoot(ctk.CTk):
                                                                  scrollbar_button_hover_color="#4d4d4d")
         self.last_runned_programs_frame.pack(side=ctk.RIGHT, expand=True, fill=ctk.BOTH)
 
-        self.open_settings()
-
-        if not self.debug:
-            self.withdraw()
-
-        if not globals.requested_to_quit:
-            self.update_stats()
+        self.update_stats()
 
     def open_settings(self) -> None:
-        if self.entry_window is not None:
-            self.entry_window.deiconify()
-            return
-        elif self.settings_window is not None:
-            self.settings_window.deiconify()
-            return
+        self.title(f"Camel Time {globals.__version__} - Settings")
+        self.minsize(320, 270)
 
-        self.settings_window = ctk.CTkToplevel(self)
-        self.settings_window.protocol("WM_DELETE_WINDOW", self.settings_window.withdraw)
+        if self.back_button is None or not self.back_button.winfo_exists():
+            self.clear_root()
+            self.back_button = ctk.CTkButton(self, image=self.arrow_icon, text="Back", command=self.init_main_page,
+                                             width=70)
+            self.back_button.pack(pady=(15, 0), padx=15, anchor=ctk.W)
+        else:
+            self.clear_root(without_back_button=True)
+            self.back_button.configure(command=self.init_main_page)
 
-        self.settings_window.title("Settings")
+        frame = ctk.CTkFrame(self)
+        frame.pack(expand=True, fill=ctk.BOTH, padx=15, pady=15)
 
-        self.settings_window.width = 400
-        self.settings_window.height = 300
+        central_frame = ctk.CTkFrame(frame, width=300, height=30)
+        central_frame.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
 
-        self.settings_window.geometry(f"{self.settings_window.width}x{self.settings_window.height}")
-        self.settings_window.resizable(False, False)
+        ctk.CTkButton(central_frame, text="Delete tracked program",
+                      command=lambda: self.enter_process("Enter tracked process to delete", command="Delete"),
+                      width=175).pack(pady=(30, 0), padx=30)
+        ctk.CTkButton(central_frame, text="Add tracked process",
+                      command=lambda: self.enter_process("Enter the name of the process to track", command="Add"),
+                      width=175).pack(pady=(15, 30), padx=30)
 
-        frame = ctk.CTkFrame(self.settings_window)
-        frame.pack(expand=True, fill=ctk.BOTH, padx=30, pady=20)
-
-        ctk.CTkButton(frame, text="Update statistic", command=lambda: self.update_stats(focus=False),
-                      width=175).pack(pady=(55, 15))
-        ctk.CTkButton(frame, text="Delete tracked program", command=lambda: self.enter_process(
-            "Enter tracked process to delete", "Delete tracked process", command="del"),
-                      width=175).pack(pady=15)
-        ctk.CTkButton(frame, text="Add tracked process", command=lambda: self.enter_process(
-            "Enter the name of the process to track", "Track new process", command="add"),
-                      width=175).pack(pady=15)
-
-        self.settings_window.withdraw()
-
-    def enter_process(self, text: str, title: str, command: Literal["del", "add"]):
-        def cancel() -> None:
-            coordinates_x = int(self.entry_window.winfo_x() - (400 - width) / 2)
-            coordinates_y = int(self.entry_window.winfo_y() - (300 - height) / 2)
-
-            self.settings_window.geometry(f"+{coordinates_x}+{coordinates_y}")
-
-            self.entry_window.destroy()
-            self.entry_window = None
-
-            self.settings_window.deiconify()
-
+    def enter_process(self, text: str, command: Literal["Delete", "Add"]):
         def ok() -> None:
-            status: bool = delete_tracked_process(process_entry.get()) if command == "del" else (
+            status: bool = delete_tracked_process(process_entry.get()) if command == "Delete" else (
                 add_tracked_process(process_entry.get(), name_entry.get()))
             if status:
                 self.update_stats()
-                cancel()
                 return
-            else:
-                self.entry_window.deiconify()
 
-        def destroy_() -> None:
-            self.entry_window.destroy()
-            self.entry_window = None
+        self.clear_root(without_back_button=True)
+        self.title(f"Camel Time {globals.__version__} - {command} tracked process")
+        self.minsize(390, 330 if command == "Add" else 290)
+        self.back_button.configure(command=self.open_settings)
 
-        self.settings_window.withdraw()
+        frame = ctk.CTkFrame(self, width=300, height=30)
+        frame.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
 
-        self.entry_window = ctk.CTkToplevel(self)
-        self.entry_window.protocol("WM_DELETE_WINDOW", destroy_)
+        ctk.CTkLabel(frame, text=text, font=("Arial", 17)).pack(pady=(30, 10))
 
-        self.entry_window.title(title)
-
-        width = 350
-        height = 235 if command == "add" else 200
-
-        coordinates_x = int(self.settings_window.winfo_x() + (400 - width)/2)
-        coordinates_y = int(self.settings_window.winfo_y() + (300 - height)/2)
-
-        self.entry_window.geometry(f"{width}x{height}+{coordinates_x}+{coordinates_y}")
-        self.entry_window.resizable(False, False)
-
-        ctk.CTkLabel(self.entry_window, text=text, font=("Arial", 17)).pack(pady=(30, 10))
-
-        process_frame = ctk.CTkFrame(self.entry_window, width=300, height=30)
+        process_frame = ctk.CTkFrame(frame, width=300, height=30)
         process_frame.pack_propagate(False)
-        process_frame.pack(pady=(0, 10 if command == "add" else 20))
+        process_frame.pack(pady=(0, 10 if command == "Add" else 20), padx=30)
 
         process_label = ctk.CTkLabel(process_frame, text="Process: ")
         process_label.pack(side=ctk.LEFT, padx=(5, 0))
@@ -155,8 +138,8 @@ class StatsRoot(ctk.CTk):
         process_entry = ctk.CTkEntry(process_frame, width=200)
         process_entry.pack(side=ctk.RIGHT, padx=(0, 5))
 
-        if command == "add":
-            name_frame = ctk.CTkFrame(self.entry_window, width=300, height=30)
+        if command == "Add":
+            name_frame = ctk.CTkFrame(frame, width=300, height=30)
             name_frame.pack_propagate(False)
             name_frame.pack(pady=(0, 20))
 
@@ -166,14 +149,16 @@ class StatsRoot(ctk.CTk):
             name_entry = ctk.CTkEntry(name_frame, width=200)
             name_entry.pack(side=ctk.RIGHT, padx=(0, 5))
 
-        button_frame = ctk.CTkFrame(self.entry_window, height=45, width=300)
+        button_frame = ctk.CTkFrame(frame, height=45, width=300)
         button_frame.pack_propagate(False)
         button_frame.pack(pady=(0, 30))
 
-        ctk.CTkButton(button_frame, text="Cancel", width=100, command=cancel).pack(side=ctk.LEFT, padx=5)
-        ctk.CTkButton(button_frame, text="Ok", width=100, command=ok).pack(side=ctk.RIGHT, padx=5)
+        ctk.CTkButton(button_frame, text="Ok", width=100, command=ok).pack(pady=7, padx=10, expand=True, fill=ctk.BOTH)
 
-    def update_stats(self, focus=False) -> None:
+    def update_stats(self) -> None:
+        if not (self.top_by_time_programs.winfo_exists() or self.last_runned_programs_frame.winfo_exists()):
+            return
+
         data: dict = get_data()
         dict_of_programs: dict = {program_data["display_name"]: {"hours": round(program_data["time"] / 3600, 1),
                                                                  "in_game": program_data["pid"] is not None,
@@ -196,9 +181,6 @@ class StatsRoot(ctk.CTk):
             if time.time() - other["last_run_time"] < 604800:
                 ctk.CTkLabel(self.last_runned_programs_frame, text=f"{program} - {other["hours"]}h",
                              font=("Arial", 17), text_color="#40a16a" if other["in_game"] else None).pack(pady=4)
-
-        if focus:
-            self.focus_set()
 
     def on_window_close(self) -> None:
         if self.debug:

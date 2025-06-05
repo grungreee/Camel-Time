@@ -46,8 +46,6 @@ Camel Time is a system monitoring tool that tracks the runtime of selected proce
   - `main.py` - Application entry point
   - `globals.py` - Global variables and constants
   - `requirements.txt` - Python dependencies
-  - `config.ini` - Configuration file (auto-generated)
-  - `data.json` - Data storage (auto-generated)
 
 - **assets/** - Static resources
   - `icon.png` - Application icon
@@ -68,7 +66,7 @@ Camel Time is a system monitoring tool that tracks the runtime of selected proce
 
 
 
-### Configuration Parameters
+## Configuration Parameters
 
 - `max_autosaves`: Maximum number of automatic backup files
 - `autosave_delay_sec`: Interval between automatic saves (seconds)
@@ -89,8 +87,8 @@ Camel Time is a system monitoring tool that tracks the runtime of selected proce
 - Statistics window shows tracked processes with runtime information
 
 ### Managing Tracked Processes
-- Add processes: Use the "+" button in the main window
-- Remove processes: Use the "-" button and select the process to remove
+- Add processes: Use the "Add tracked process" button in the main window
+- Remove processes: Use the "Delete tracked program" button and select the process to remove
 - Configure settings: Access through the settings button
 
 ## Data Management
