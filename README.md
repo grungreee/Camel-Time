@@ -25,7 +25,7 @@ Camel Time is a system monitoring tool that tracks the runtime of selected proce
 ## Installation
 
 ### Option 1: Executable
-1. Download `Camel Time 3.61.exe`
+1. Download .exe file
 2. Run the executable
 3. Configuration files will be created automatically
 
